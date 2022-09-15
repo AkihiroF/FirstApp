@@ -8,20 +8,34 @@ public class MovingCamera : MonoBehaviour
     [SerializeField] private GameObject playerGameObject;
     [SerializeField] private float smooth;
     [SerializeField] private float distance;
-    [SerializeField] private float updistance;
+    [SerializeField] private float sens;
 
+    private float _rotX;
+    private float _rotY;
     private Transform _player;
+
 
     private void Start()
     {
         _player = playerGameObject.transform;
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update()
     {
-        var playerPos = _player.position;
-        var pos = new Vector3(playerPos.x, playerPos.y+updistance, playerPos.z - distance);
-        transform.position = Vector3.Lerp(transform.position, pos, smooth);
-        transform.LookAt(_player);
+        _rotX -= Input.GetAxis("Mouse Y") * sens;
+        _rotY += Input.GetAxis("Mouse X") * sens;
+
+        _rotX = Math.Clamp(_rotX, -9, 45);
+        var endrot = new  Vector3(_rotX, _rotY, 0);
+        transform.eulerAngles = Vector3.Lerp(transform.eulerAngles, endrot, Time.time * smooth);
+        transform. position = Vector3.Lerp(transform.position, _player.position - transform.forward * distance, Time.time * smooth);
+
+        if (!Input.GetKey(KeyCode.X))
+        {
+            var endrotPlayer = new Vector3(0, transform.eulerAngles.y, 0);
+            _player.eulerAngles = Vector3.Lerp(_player.eulerAngles, endrotPlayer, Time.time * smooth);
+        }
     }
 }
